@@ -317,36 +317,25 @@ async function handleEndSession(
   const timestamp = new Date().toISOString()
 
   if (muUpdate) {
-    await supabase.rpc('character_append_log', {
-      p_user_id: userId,
-      p_character_id: 'mu',
-      p_entry: muUpdate,
-      p_timestamp: timestamp,
-    }).catch(() => {
-      // Fallback: manually update
-      supabase.from('character_states')
-        .select('log')
-        .eq('user_id', userId)
-        .eq('character_id', 'mu')
-        .maybeSingle()
-        .then(({ data }) => {
-          const log = data?.log || []
-          log.push({ text: muUpdate, date: timestamp })
-          supabase.from('character_states')
-            .update({ log, updated_at: timestamp })
-            .eq('user_id', userId)
-            .eq('character_id', 'mu')
-        })
-    })
+    try {
+      await supabase.rpc('character_append_log', {
+        p_user_id: userId,
+        p_character_id: 'mu',
+        p_entry: muUpdate,
+        p_timestamp: timestamp,
+      })
+    } catch { /* ignore RPC errors */ }
   }
 
   if (sangUpdate) {
-    await supabase.rpc('character_append_log', {
-      p_user_id: userId,
-      p_character_id: 'sang',
-      p_entry: sangUpdate,
-      p_timestamp: timestamp,
-    }).catch(() => {})
+    try {
+      await supabase.rpc('character_append_log', {
+        p_user_id: userId,
+        p_character_id: 'sang',
+        p_entry: sangUpdate,
+        p_timestamp: timestamp,
+      })
+    } catch { /* ignore */ }
   }
 
   // Clear conversation messages for this conversation (keep history in DB for display)
