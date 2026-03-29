@@ -287,7 +287,7 @@ async function handleEndSession(
     const reply = await chatWithAI({
       config: aiConfig,
       systemPrompt,
-      messages: allMessages,
+      messages: allMessages as { role: 'user' | 'assistant'; content: string }[],
       maxTokens: 8192,
     })
 

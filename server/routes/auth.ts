@@ -1,6 +1,6 @@
-import { Router } from 'express'
+import { Router, Request } from 'express'
 import { getSupabaseAdmin, getSupabase } from '../lib/supabase.js'
-import { generateToken } from '../middleware/auth.js'
+import { generateToken, AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
 
@@ -82,8 +82,7 @@ router.post('/login', async (req, res) => {
 })
 
 router.get('/me', async (req, res) => {
-  const { AuthRequest } = await import('../middleware/auth.js')
-  const authReq = req as AuthRequest
+  const authReq = req as unknown as AuthRequest
   if (!authReq.userId) {
     res.status(401).json({ error: 'Unauthorized' })
     return

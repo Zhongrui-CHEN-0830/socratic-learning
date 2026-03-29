@@ -22,7 +22,9 @@ export async function chatWithAI({ config, systemPrompt, messages, maxTokens = 4
   }
 }
 
-async function chatOpenAI({ config, systemPrompt, messages, maxTokens }: ChatOptions): Promise<string> {
+async function chatOpenAI({ config, systemPrompt, messages, maxTokens }: {
+  config: AIConfig; systemPrompt: string; messages: { role: 'user' | 'assistant'; content: string }[]; maxTokens?: number
+}): Promise<string> {
   const client = new OpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseUrl || 'https://api.openai.com/v1',
@@ -36,13 +38,15 @@ async function chatOpenAI({ config, systemPrompt, messages, maxTokens }: ChatOpt
   const response = await client.chat.completions.create({
     model: 'gpt-4o',
     messages: allMessages,
-    max_tokens: maxTokens,
+    max_tokens: maxTokens ?? 4096,
   })
 
   return response.choices[0]?.message?.content || ''
 }
 
-async function chatAnthropic({ config, systemPrompt, messages, maxTokens }: ChatOptions): Promise<string> {
+async function chatAnthropic({ config, systemPrompt, messages, maxTokens }: {
+  config: AIConfig; systemPrompt: string; messages: { role: 'user' | 'assistant'; content: string }[]; maxTokens?: number
+}): Promise<string> {
   const client = new Anthropic({
     apiKey: config.apiKey,
     baseURL: config.baseUrl || undefined,
@@ -50,7 +54,7 @@ async function chatAnthropic({ config, systemPrompt, messages, maxTokens }: Chat
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: maxTokens,
+    max_tokens: maxTokens ?? 4096,
     system: systemPrompt,
     messages: messages as Anthropic.MessageCreateParams.Message[],
   })
