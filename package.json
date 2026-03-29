@@ -1,0 +1,14 @@
+{
+  "name": "socratic-learning",
+  "version": "1.0.0",
+  "description": "墨韵书院 · 苏格拉底式 AI 伴学系统",
+  "private": true,
+  "scripts": {
+    "dev": "cd server && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:frontend",
+    "setup": "npm install && cd frontend && npm install && cd ../server && npm install"
+  },
+  "keywords": ["socratic-learning", "ai-tutor", "supabase"],
+  "license": "MIT"
+}

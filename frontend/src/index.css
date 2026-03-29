@@ -1,0 +1,168 @@
+/* =============================================
+   墨韵书院 · Global CSS Variables & Reset
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Color Palette */
+  --ink-black: #1a1612;
+  --ink-dark: #242019;
+  --ink-surface: #2e2a23;
+  --ink-surface-2: #38332b;
+  --ink-border: #3d3830;
+  --ink-border-2: #524a3d;
+
+  --gold-accent: #c9a84c;
+  --gold-muted: #8a7040;
+  --gold-glow: rgba(201, 168, 76, 0.15);
+
+  --mu-primary: #9b7fba;
+  --mu-light: #b8a0cc;
+  --mu-bg: #2a2235;
+  --mu-glow: rgba(155, 127, 186, 0.2);
+
+  --sang-primary: #d4956a;
+  --sang-light: #e8b88a;
+  --sang-bg: #352a20;
+  --sang-glow: rgba(212, 149, 106, 0.2);
+
+  --user-bg: #1f2d3d;
+  --user-border: rgba(100, 149, 237, 0.3);
+  --user-text: #a8c8f0;
+
+  --text-primary: #e8e0d4;
+  --text-secondary: #9a9080;
+  --text-muted: #6a6258;
+
+  --danger: #c0614a;
+  --danger-bg: rgba(192, 97, 74, 0.12);
+  --success: #6a9e6a;
+
+  /* Typography */
+  --font-serif: 'Noto Serif SC', 'Source Han Serif SC', Georgia, serif;
+  --font-sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Borders */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 0 20px rgba(201, 168, 76, 0.15);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* Layout */
+  --sidebar-width: 268px;
+  --topbar-height: 58px;
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--ink-black);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-border-2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Selection */
+::selection {
+  background: var(--gold-accent);
+  color: var(--ink-black);
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid var(--gold-accent);
+  outline-offset: 2px;
+}
+
+/* Links */
+a {
+  color: var(--gold-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Buttons base */
+button {
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input, textarea, select {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+/* Utility classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+}

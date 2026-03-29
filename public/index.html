@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>苏格拉底伴学系统</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>伴学系统</h2>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>教材</h3>
+        <div id="textbook-list" class="textbook-list"></div>
+        <label class="upload-btn">
+          上传教材 (.md)
+          <input type="file" id="upload-input" accept=".md" hidden>
+        </label>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>工具</h3>
+        <button class="tool-btn" onclick="viewDiary()">查看日记</button>
+        <button class="tool-btn" onclick="viewProgress()">查看进度</button>
+        <button class="tool-btn" onclick="viewNotes()">教材笔记</button>
+        <button class="tool-btn end-btn" onclick="endStudy()">结束当天的学习</button>
+        <button class="tool-btn new-btn" onclick="newSession()">新建对话</button>
+      </div>
+    </aside>
+
+    <!-- Main chat area -->
+    <main class="chat-area">
+      <div class="chat-header">
+        <div class="avatar-group">
+          <span class="avatar mu">千汐</span>
+          <span class="avatar sang">桑稚</span>
+        </div>
+        <span class="current-textbook" id="current-textbook">未选择教材</span>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="system-msg">
+          欢迎来到苏格拉底伴学系统！请先上传 MD 格式的教材，然后选择它开始学习。
+        </div>
+      </div>
+
+      <div class="input-area">
+        <textarea id="user-input" placeholder="输入消息..." rows="1"></textarea>
+        <button id="send-btn" onclick="sendMessage()">发送</button>
+      </div>
+    </main>
+
+    <!-- Modal for viewing documents -->
+    <div class="modal" id="modal" onclick="closeModal(event)">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title"></h3>
+          <button class="modal-close" onclick="document.getElementById('modal').classList.remove('active')">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
