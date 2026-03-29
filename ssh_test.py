@@ -11,17 +11,47 @@ def run(cmd, wait=5):
     out = stdout.read(); err = stderr.read()
     return (out+err).decode('utf-8', errors='replace')
 
-# 1. Delete old dist to avoid conflicts
-print("--- delete old dist ---")
-print(run('rm -rf /opt/socratic-learning/server/dist', 3))
+# 1. Pull latest
+print("--- git pull ---")
+print(run('cd /opt/socratic-learning && git pull origin main', 10)[:300])
 
-# 2. Try tsx directly (no tsc needed)
-print("--- install tsx locally ---")
-print(run('cd /opt/socratic-learning/server && npm install tsx 2>&1', 15))
+# 2. Install tsx locally
+print("--- install tsx ---")
+print(run('cd /opt/socratic-learning/server && npm install tsx --save-dev', 15)[:200])
 
-# 3. Start with node directly via tsx (don't use pm2 with tsx - use node directly)
-print("--- test run tsx ---")
-print(run('cd /opt/socratic-learning/server && timeout 10 npx tsx index.ts 2>&1', 12))
+# 3. Kill old pm2
+print("--- delete old pm2 ---")
+print(run('pm2 delete socratic-learning 2>/dev/null; true', 3))
+
+# 4. Compile tsx
+print("--- tsc ---")
+result = run('cd /opt/socratic-learning/server && npx tsc 2>&1', 20)
+print("tsc result:", result[:500])
+
+# 5. Check if dist/index.js exists
+print("--- dist check ---")
+print(run('ls -la /opt/socratic-learning/server/dist/index.js 2>&1', 3))
+
+# 6. Start with node directly (compiled dist)
+print("--- start pm2 with node ---")
+result = run('cd /opt/socratic-learning/server && pm2 start dist/index.js --name socratic-learning 2>&1', 8)
+print(result[:300])
+
+# 7. Save
+print("--- pm2 save ---")
+print(run('pm2 save 2>&1', 3))
+print(run('pm2 startup 2>&1 || true', 5))
+
+# 8. Wait and check
+time.sleep(5)
+print("--- health ---")
+print(run('curl -s --max-time 5 http://127.0.0.1:3000/api/health 2>&1', 8))
+
+print("--- http status ---")
+print(run('curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/ 2>&1', 5))
+
+print("--- pm2 logs ---")
+print(run('pm2 logs --lines 15 --nostream 2>&1', 5))
 
 c.close()
 print("DONE")
