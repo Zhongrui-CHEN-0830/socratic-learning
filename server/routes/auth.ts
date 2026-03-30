@@ -1,6 +1,6 @@
-import { Router, Request } from 'express'
+import { Router } from 'express'
 import { getSupabaseAdmin, getSupabase } from '../lib/supabase.js'
-import { generateToken, AuthRequest } from '../middleware/auth.js'
+import { generateToken } from '../middleware/auth.js'
 
 const router = Router()
 
