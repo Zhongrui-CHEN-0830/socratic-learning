@@ -56,7 +56,7 @@ async function chatAnthropic({ config, systemPrompt, messages, maxTokens }: {
     model: 'claude-sonnet-4-20250514',
     max_tokens: maxTokens ?? 4096,
     system: systemPrompt,
-    messages: messages as Anthropic.MessageCreateParams.Message[],
+    messages: messages as Parameters<Anthropic['messages']['create']>[0]['messages'],
   })
 
   return response.content
