@@ -343,3 +343,5 @@ async function handleEndSession(
 
   return { farewell }
 }
+
+export default router
