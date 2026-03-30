@@ -22,7 +22,7 @@ app.use(cors())
 app.use(express.json({ limit: '2mb' }))
 
 // Serve built frontend in production
-const distPath = path.join(__dirname, '..', 'frontend', 'dist')
+const distPath = process.env.STATIC_DIR || path.join(__dirname, '..', '..', 'frontend', 'dist')
 app.use(express.static(distPath))
 
 // API Routes
