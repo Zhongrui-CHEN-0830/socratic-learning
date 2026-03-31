@@ -4,9 +4,9 @@ import { generateToken, authMiddleware } from '../middleware/auth.js'
 
 const router = Router()
 
-router.post('/register', async (req, res) => {
+router.post('/register', async (req: any, res: any) => {
   try {
-    const { email, password } = req.body as { email?: string; password?: string }
+    const { email, password } = req.body
     if (!email || !password) {
       res.status(400).json({ error: 'Email and password are required' })
       return
@@ -50,9 +50,9 @@ router.post('/register', async (req, res) => {
   }
 })
 
-router.post('/login', async (req, res) => {
+router.post('/login', async (req: any, res: any) => {
   try {
-    const { email, password } = req.body as { email?: string; password?: string }
+    const { email, password } = req.body
     if (!email || !password) {
       res.status(400).json({ error: 'Email and password are required' })
       return
@@ -77,7 +77,7 @@ router.post('/login', async (req, res) => {
   }
 })
 
-router.get('/me', authMiddleware, async (req: any, res) => {
+router.get('/me', authMiddleware, async (req: any, res: any) => {
   const userId = req.userId
   if (!userId) {
     res.status(401).json({ error: 'Unauthorized' })
