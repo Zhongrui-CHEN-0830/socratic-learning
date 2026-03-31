@@ -4,9 +4,62 @@ import styles from './Settings.module.css'
 
 interface ApiKeyConfig {
   id: string
-  provider: 'openai' | 'anthropic'
+  provider: string
   base_url: string
+  model?: string
   is_active: boolean
+}
+
+// Preset providers with their default base URLs and models
+const PROVIDER_PRESETS: Record<string, { label: string; baseUrl: string; models: string[]; keyPlaceholder: string }> = {
+  anthropic: {
+    label: 'Anthropic (Claude)',
+    baseUrl: 'https://api.anthropic.com',
+    models: ['claude-opus-4-5', 'claude-sonnet-4-5', 'claude-haiku-4-5', 'claude-opus-4-20250514', 'claude-sonnet-4-20250514'],
+    keyPlaceholder: 'sk-ant-...',
+  },
+  openai: {
+    label: 'OpenAI (GPT)',
+    baseUrl: 'https://api.openai.com/v1',
+    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    keyPlaceholder: 'sk-...',
+  },
+  deepseek: {
+    label: 'DeepSeek',
+    baseUrl: 'https://api.deepseek.com/v1',
+    models: ['deepseek-chat', 'deepseek-reasoner'],
+    keyPlaceholder: 'sk-...',
+  },
+  zhipu: {
+    label: '智谱 GLM (ChatGLM)',
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    models: ['glm-4-plus', 'glm-4-air', 'glm-4-flash', 'glm-4-long'],
+    keyPlaceholder: 'your-zhipu-api-key',
+  },
+  minimax: {
+    label: 'MiniMax',
+    baseUrl: 'https://api.minimax.chat/v1',
+    models: ['MiniMax-Text-01', 'abab6.5s-chat', 'abab5.5-chat'],
+    keyPlaceholder: 'your-minimax-api-key',
+  },
+  moonshot: {
+    label: 'Moonshot (Kimi)',
+    baseUrl: 'https://api.moonshot.cn/v1',
+    models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+    keyPlaceholder: 'sk-...',
+  },
+  qwen: {
+    label: '通义千问 (Qwen)',
+    baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    models: ['qwen-max', 'qwen-plus', 'qwen-turbo', 'qwen-long'],
+    keyPlaceholder: 'sk-...',
+  },
+  custom: {
+    label: '自定义 / 中转站',
+    baseUrl: '',
+    models: [],
+    keyPlaceholder: 'your-api-key',
+  },
 }
 
 export default function Settings() {
@@ -16,33 +69,32 @@ export default function Settings() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
 
-  // Form state per provider
-  const [openaiKey, setOpenaiKey] = useState('')
-  const [openaiUrl, setOpenaiUrl] = useState('https://api.openai.com/v1')
-  const [anthropicKey, setAnthropicKey] = useState('')
-  const [anthropicUrl, setAnthropicUrl] = useState('https://api.anthropic.com')
+  // Form state
+  const [selectedProvider, setSelectedProvider] = useState('anthropic')
+  const [apiKey, setApiKey] = useState('')
+  const [baseUrl, setBaseUrl] = useState(PROVIDER_PRESETS.anthropic.baseUrl)
+  const [selectedModel, setSelectedModel] = useState(PROVIDER_PRESETS.anthropic.models[0])
+  const [customModel, setCustomModel] = useState('')
 
   useEffect(() => {
     loadConfigs()
   }, [])
 
+  // Update baseUrl and model when provider changes
+  useEffect(() => {
+    const preset = PROVIDER_PRESETS[selectedProvider]
+    if (preset) {
+      setBaseUrl(preset.baseUrl)
+      setSelectedModel(preset.models[0] || '')
+      setCustomModel('')
+    }
+  }, [selectedProvider])
+
   async function loadConfigs() {
     setLoading(true)
     try {
       const data = await apiFetch('/user/api-keys')
-      const keys: ApiKeyConfig[] = data.keys || []
-
-      // Decrypt and populate forms
-      // Note: keys returned already decrypted by server
-      keys.forEach(k => {
-        if (k.provider === 'openai') {
-          setOpenaiKey(k.base_url) // The API key is returned as "decrypted key" field
-        } else if (k.provider === 'anthropic') {
-          setAnthropicKey(k.base_url)
-        }
-      })
-
-      setConfigs(keys)
+      setConfigs(data.keys || [])
     } catch (err) {
       console.error('Failed to load API keys:', err)
     } finally {
@@ -50,26 +102,48 @@ export default function Settings() {
     }
   }
 
-  async function handleSave(provider: 'openai' | 'anthropic') {
+  async function handleSave() {
+    if (!apiKey.trim()) {
+      setError('请输入 API Key')
+      return
+    }
     setSaving(true)
     setError('')
     setSaved(false)
     try {
-      const key = provider === 'openai' ? openaiKey : anthropicKey
-      const baseUrl = provider === 'openai' ? openaiUrl : anthropicUrl
-
+      const model = customModel.trim() || selectedModel
+      // provider field: use selectedProvider; for custom, use 'openai' as protocol (OpenAI-compatible)
+      const providerForServer = selectedProvider === 'custom' ? 'openai' : selectedProvider
       await apiFetch('/user/api-keys', {
         method: 'POST',
-        body: JSON.stringify({ provider, base_url: key, key: baseUrl }),
+        body: JSON.stringify({
+          provider: providerForServer,
+          base_url: baseUrl.trim(),
+          key: apiKey.trim(),
+          model: model || undefined,
+        }),
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
+      await loadConfigs()
+      setApiKey('')
     } catch (err: unknown) {
       setError((err as Error).message)
     } finally {
       setSaving(false)
     }
   }
+
+  async function handleDelete(id: string) {
+    try {
+      await apiFetch(`/user/api-keys/${id}`, { method: 'DELETE' })
+      await loadConfigs()
+    } catch (err: unknown) {
+      setError((err as Error).message)
+    }
+  }
+
+  const preset = PROVIDER_PRESETS[selectedProvider]
 
   if (loading) {
     return (
@@ -83,95 +157,132 @@ export default function Settings() {
     <div className={styles.page}>
       <div className={styles.container}>
         <header className={styles.header}>
-          <h1 className={styles.title}>设置</h1>
-          <p className={styles.subtitle}>配置你的 AI API 密钥，系统将使用你自己的密钥与 AI 对话。密钥采用 AES-256 加密存储。</p>
+          <h1 className={styles.title}>API 设置</h1>
+          <p className={styles.subtitle}>配置你的 AI API 密钥。支持 Anthropic、OpenAI、DeepSeek、GLM、MiniMax、Kimi、通义千问及任意 OpenAI 兼容中转站。密钥采用 AES-256 加密存储。</p>
         </header>
 
         {error && <div className={styles.error}>{error}</div>}
         {saved && <div className={styles.success}>✓ 保存成功</div>}
 
-        {/* OpenAI */}
+        {/* Add / Update Key */}
         <section className={styles.card}>
           <div className={styles.cardHeader}>
-            <div className={styles.providerBadge} data-provider="openai">OpenAI</div>
-            <h2 className={styles.cardTitle}>OpenAI API</h2>
-            <p className={styles.cardDesc}>使用 OpenAI GPT 系列模型（GPT-4o、GPT-4 等）</p>
+            <h2 className={styles.cardTitle}>添加 / 更新 API 配置</h2>
           </div>
           <div className={styles.fields}>
+
+            {/* Provider selector */}
             <div className={styles.field}>
-              <label>Base URL</label>
+              <label>服务商</label>
+              <select
+                value={selectedProvider}
+                onChange={e => setSelectedProvider(e.target.value)}
+                className={styles.select}
+              >
+                {Object.entries(PROVIDER_PRESETS).map(([key, p]) => (
+                  <option key={key} value={key}>{p.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Base URL */}
+            <div className={styles.field}>
+              <label>Base URL {selectedProvider === 'custom' ? '（中转站地址）' : ''}</label>
               <input
                 type="text"
-                value={openaiUrl}
-                onChange={e => setOpenaiUrl(e.target.value)}
-                placeholder="https://api.openai.com/v1"
+                value={baseUrl}
+                onChange={e => setBaseUrl(e.target.value)}
+                placeholder={preset?.baseUrl || 'https://your-proxy.com/v1'}
               />
+              {selectedProvider === 'custom' && (
+                <span className={styles.hint}>填入中转站的 OpenAI 兼容接口地址，如 https://api.example.com/v1</span>
+              )}
             </div>
+
+            {/* Model selector */}
+            <div className={styles.field}>
+              <label>模型</label>
+              {preset?.models.length > 0 ? (
+                <select
+                  value={selectedModel}
+                  onChange={e => setSelectedModel(e.target.value)}
+                  className={styles.select}
+                >
+                  {preset.models.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                  <option value="__custom__">自定义模型名...</option>
+                </select>
+              ) : null}
+              {(selectedModel === '__custom__' || preset?.models.length === 0) && (
+                <input
+                  type="text"
+                  value={customModel}
+                  onChange={e => setCustomModel(e.target.value)}
+                  placeholder="输入模型名，如 gpt-4o / claude-opus-4-5 / deepseek-chat"
+                  style={{ marginTop: preset?.models.length > 0 ? '8px' : '0' }}
+                />
+              )}
+            </div>
+
+            {/* API Key */}
             <div className={styles.field}>
               <label>API Key</label>
               <input
                 type="password"
-                value={openaiKey}
-                onChange={e => setOpenaiKey(e.target.value)}
-                placeholder="sk-..."
+                value={apiKey}
+                onChange={e => setApiKey(e.target.value)}
+                placeholder={preset?.keyPlaceholder || 'your-api-key'}
               />
-              <span className={styles.hint}>密钥将加密存储，不会以明文形式保存</span>
+              <span className={styles.hint}>密钥将使用 AES-256-GCM 加密存储，不会明文保存</span>
             </div>
+
             <button
               className={styles.saveBtn}
-              onClick={() => handleSave('openai')}
-              disabled={saving || !openaiKey.trim()}
+              onClick={handleSave}
+              disabled={saving || !apiKey.trim()}
             >
-              {saving ? '保存中...' : '保存 OpenAI 配置'}
+              {saving ? '保存中...' : '保存配置'}
             </button>
           </div>
         </section>
 
-        {/* Anthropic */}
-        <section className={styles.card}>
-          <div className={styles.cardHeader}>
-            <div className={styles.providerBadge} data-provider="anthropic">Anthropic</div>
-            <h2 className={styles.cardTitle}>Anthropic API</h2>
-            <p className={styles.cardDesc}>使用 Claude 系列模型（Claude 3.5 Sonnet、Opus 等）</p>
-          </div>
-          <div className={styles.fields}>
-            <div className={styles.field}>
-              <label>Base URL</label>
-              <input
-                type="text"
-                value={anthropicUrl}
-                onChange={e => setAnthropicUrl(e.target.value)}
-                placeholder="https://api.anthropic.com"
-              />
+        {/* Active configs */}
+        {configs.length > 0 && (
+          <section className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>已配置的 API</h2>
             </div>
-            <div className={styles.field}>
-              <label>API Key</label>
-              <input
-                type="password"
-                value={anthropicKey}
-                onChange={e => setAnthropicKey(e.target.value)}
-                placeholder="sk-ant-..."
-              />
-              <span className={styles.hint}>密钥将加密存储，不会以明文形式保存</span>
+            <div className={styles.configList}>
+              {configs.map(c => (
+                <div key={c.id} className={styles.configItem}>
+                  <div className={styles.configInfo}>
+                    <span className={styles.providerBadge} data-provider={c.provider}>
+                      {PROVIDER_PRESETS[c.provider]?.label || c.provider}
+                    </span>
+                    <span className={styles.configKey}>{c.base_url}</span>
+                  </div>
+                  <button
+                    className={styles.deleteConfigBtn}
+                    onClick={() => handleDelete(c.id)}
+                  >
+                    删除
+                  </button>
+                </div>
+              ))}
             </div>
-            <button
-              className={styles.saveBtn}
-              onClick={() => handleSave('anthropic')}
-              disabled={saving || !anthropicKey.trim()}
-            >
-              {saving ? '保存中...' : '保存 Anthropic 配置'}
-            </button>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Info */}
         <section className={styles.info}>
-          <h3>关于 API 密钥</h3>
+          <h3>使用说明</h3>
           <ul>
+            <li>支持所有 OpenAI 兼容接口，包括国内中转站（只需填入中转站地址和对应 Key）</li>
+            <li>国内模型（DeepSeek、GLM、MiniMax、Kimi、通义千问）均使用 OpenAI 兼容协议</li>
+            <li>可以自由选择模型，如 claude-opus-4-5（最强）或 claude-sonnet-4-5（均衡）</li>
             <li>密钥使用 AES-256-GCM 加密存储，即使数据库泄露也无法还原原始密钥</li>
-            <li>你可以同时配置多个 provider，系统将使用你选定的 provider 进行对话</li>
-            <li>不启用额度限制，用户可自由使用自己的 API 额度</li>
-            <li>请勿将密钥泄露给他人，系统不会在任何界面明文展示完整密钥</li>
+            <li>不设额度限制，你的 API 额度完全由你自己控制</li>
           </ul>
         </section>
       </div>

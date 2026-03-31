@@ -17,10 +17,12 @@ export const clearAuthToken = () => {
 }
 
 // API helper with auth
+// If body is FormData, do NOT set Content-Type (browser sets it with boundary automatically)
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = getAuthToken()
+  const isFormData = options.body instanceof FormData
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers as Record<string, string> || {}),
   }
   if (token) {

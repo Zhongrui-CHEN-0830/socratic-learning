@@ -5,6 +5,7 @@ export interface AIConfig {
   provider: 'openai' | 'anthropic'
   baseUrl: string
   apiKey: string
+  model?: string  // user-specified model; falls back to defaults if not set
 }
 
 export interface ChatOptions {
@@ -18,6 +19,7 @@ export async function chatWithAI({ config, systemPrompt, messages, maxTokens = 4
   if (config.provider === 'anthropic') {
     return chatAnthropic({ config, systemPrompt, messages, maxTokens })
   } else {
+    // 'openai' covers OpenAI, DeepSeek, GLM, MiniMax, Kimi, Qwen, and any OpenAI-compatible proxy
     return chatOpenAI({ config, systemPrompt, messages, maxTokens })
   }
 }
@@ -30,13 +32,15 @@ async function chatOpenAI({ config, systemPrompt, messages, maxTokens }: {
     baseURL: config.baseUrl || 'https://api.openai.com/v1',
   })
 
+  const model = config.model || 'gpt-4o'
+
   const allMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: 'system', content: systemPrompt },
     ...messages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
   ]
 
   const response = await client.chat.completions.create({
-    model: 'gpt-4o',
+    model,
     messages: allMessages,
     max_tokens: maxTokens ?? 4096,
   })
@@ -52,8 +56,10 @@ async function chatAnthropic({ config, systemPrompt, messages, maxTokens }: {
     baseURL: config.baseUrl || undefined,
   })
 
+  const model = config.model || 'claude-sonnet-4-20250514'
+
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model,
     max_tokens: maxTokens ?? 4096,
     system: systemPrompt,
     messages: messages as Parameters<Anthropic['messages']['create']>[0]['messages'],

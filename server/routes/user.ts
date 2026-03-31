@@ -44,7 +44,7 @@ router.get('/api-keys', async (req: AuthRequest, res) => {
 // Save or update API key
 router.post('/api-keys', async (req: AuthRequest, res) => {
   try {
-    const { provider, base_url, key } = req.body
+    const { provider, base_url, key, model } = req.body
     if (!provider || !key) {
       res.status(400).json({ error: 'Provider and key are required' })
       return
@@ -52,26 +52,29 @@ router.post('/api-keys', async (req: AuthRequest, res) => {
 
     const supabase = getSupabase()
 
-    // Deactivate existing key for this provider
+    // Deactivate all existing active keys (only one active config at a time)
     await supabase
       .from('api_keys')
       .update({ is_active: false })
       .eq('user_id', req.userId!)
-      .eq('provider', provider)
 
     // Encrypt and store
     const { encrypted, iv } = encrypt(key)
 
+    const insertData: Record<string, unknown> = {
+      user_id: req.userId!,
+      provider,
+      base_url: base_url || '',
+      encrypted_key: encrypted,
+      iv,
+      is_active: true,
+    }
+    // Store model if provided (column may not exist yet — ignore error gracefully)
+    if (model) insertData.model = model
+
     const { data, error } = await supabase
       .from('api_keys')
-      .insert({
-        user_id: req.userId!,
-        provider,
-        base_url, // This is the base URL field
-        encrypted_key: encrypted,
-        iv,
-        is_active: true,
-      })
+      .insert(insertData)
       .select()
       .single()
 
@@ -82,6 +85,7 @@ router.post('/api-keys', async (req: AuthRequest, res) => {
         id: data.id,
         provider: data.provider,
         base_url: maskKey(key),
+        model: data.model || model || null,
         is_active: data.is_active,
         created_at: data.created_at,
       }

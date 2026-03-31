@@ -198,3 +198,76 @@
   color: var(--gold-muted);
   font-weight: 700;
 }
+
+/* Select dropdown */
+.select {
+  background: var(--ink-dark);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='%23888'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+.select:focus {
+  border-color: var(--gold-accent);
+}
+.select option {
+  background: var(--ink-surface);
+  color: var(--text-primary);
+}
+
+/* Active config list */
+.configList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.configItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ink-dark);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.configInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.configKey {
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deleteConfigBtn {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(192, 97, 74, 0.3);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+.deleteConfigBtn:hover {
+  background: var(--danger-bg);
+}

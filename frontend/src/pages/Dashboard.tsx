@@ -208,7 +208,7 @@ export default function Dashboard() {
     formData.append('textbook', file)
     const data = await apiFetch('/textbooks/upload', {
       method: 'POST',
-      body: formData as unknown as string,
+      body: formData,
     })
     const newTb: Textbook = data.textbook
     setTextbooks(prev => [...prev, newTb])

@@ -102,7 +102,7 @@ function detectCharacter(content: string): 'mu' | 'sang' | null {
 }
 
 // Get user's active API key
-async function getUserAIConfig(userId: string): Promise<{ provider: 'openai' | 'anthropic'; baseUrl: string; apiKey: string } | null> {
+async function getUserAIConfig(userId: string): Promise<{ provider: 'openai' | 'anthropic'; baseUrl: string; apiKey: string; model?: string } | null> {
   const supabase = getSupabase()
   const { data } = await supabase
     .from('api_keys')
@@ -119,6 +119,7 @@ async function getUserAIConfig(userId: string): Promise<{ provider: 'openai' | '
       provider: data.provider as 'openai' | 'anthropic',
       baseUrl: data.base_url,
       apiKey: decryptedKey,
+      model: data.model || undefined,
     }
   } catch {
     return null
