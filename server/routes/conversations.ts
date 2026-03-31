@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { getSupabase } from '../lib/supabase.js'
+﻿import { Router } from 'express'
+import { getSupabaseAdmin } from '../lib/supabase.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
@@ -8,7 +8,7 @@ router.use(authMiddleware)
 // List conversations
 router.get('/', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
@@ -27,7 +27,7 @@ router.get('/', async (req: AuthRequest, res) => {
 router.post('/', async (req: AuthRequest, res) => {
   try {
     const { textbook_id } = req.body
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
 
     const { data, error } = await supabase
       .from('conversations')
@@ -51,7 +51,7 @@ router.post('/', async (req: AuthRequest, res) => {
 router.patch('/:id', async (req: AuthRequest, res) => {
   try {
     const { textbook_id, title } = req.body
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
 
     const updates: Record<string, unknown> = {}
     if (textbook_id !== undefined) updates.current_textbook_id = textbook_id
@@ -76,7 +76,7 @@ router.patch('/:id', async (req: AuthRequest, res) => {
 // Get messages for a conversation
 router.get('/:id/messages', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -94,7 +94,7 @@ router.get('/:id/messages', async (req: AuthRequest, res) => {
 // Delete conversation
 router.delete('/:id', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     await supabase
       .from('conversations')
       .delete()

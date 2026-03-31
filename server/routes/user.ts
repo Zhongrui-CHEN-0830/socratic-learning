@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { getSupabase } from '../lib/supabase.js'
+﻿import { Router } from 'express'
+import { getSupabaseAdmin } from '../lib/supabase.js'
 import { encrypt, decrypt, maskKey } from '../lib/encryption.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
 
@@ -9,7 +9,7 @@ router.use(authMiddleware)
 // Get all API keys (decrypted for display)
 router.get('/api-keys', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('api_keys')
       .select('*')
@@ -50,7 +50,7 @@ router.post('/api-keys', async (req: AuthRequest, res) => {
       return
     }
 
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
 
     // Deactivate all existing active keys (only one active config at a time)
     await supabase
@@ -99,7 +99,7 @@ router.post('/api-keys', async (req: AuthRequest, res) => {
 // Delete API key
 router.delete('/api-keys/:id', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { error } = await supabase
       .from('api_keys')
       .update({ is_active: false })
@@ -117,7 +117,7 @@ router.delete('/api-keys/:id', async (req: AuthRequest, res) => {
 router.put('/profile', async (req: AuthRequest, res) => {
   try {
     const { nickname } = req.body
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
 
     const { data, error } = await supabase
       .from('profiles')

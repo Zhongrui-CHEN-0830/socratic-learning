@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { getSupabase } from '../lib/supabase.js'
+﻿import { Router } from 'express'
+import { getSupabaseAdmin } from '../lib/supabase.js'
 import { decrypt } from '../lib/encryption.js'
 import { chatWithAI } from '../lib/ai.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
@@ -36,7 +36,7 @@ async function buildSystemPrompt(
     readTeacherFile('sang-zhi.md'),
   ])
 
-  const supabase = getSupabase()
+  const supabase = getSupabaseAdmin()
   const { data: states } = await supabase
     .from('character_states')
     .select('*')
@@ -103,7 +103,7 @@ function detectCharacter(content: string): 'mu' | 'sang' | null {
 
 // Get user's active API key
 async function getUserAIConfig(userId: string): Promise<{ provider: 'openai' | 'anthropic'; baseUrl: string; apiKey: string; model?: string } | null> {
-  const supabase = getSupabase()
+  const supabase = getSupabaseAdmin()
   const { data } = await supabase
     .from('api_keys')
     .select('*')
@@ -129,7 +129,7 @@ async function getUserAIConfig(userId: string): Promise<{ provider: 'openai' | '
 // Get textbook content
 async function getTextbookContent(userId: string, textbookId: string | null): Promise<string> {
   if (!textbookId) return ''
-  const supabase = getSupabase()
+  const supabase = getSupabaseAdmin()
   const { data } = await supabase
     .from('textbooks')
     .select('storage_path')
@@ -155,7 +155,7 @@ router.post('/', async (req: AuthRequest, res) => {
       return
     }
 
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const userId = req.userId!
 
     // Get conversation
@@ -302,7 +302,7 @@ async function handleEndSession(
 
         // Save diary
         if (parsed.diary) {
-          const supabase = getSupabase()
+          const supabase = getSupabaseAdmin()
           await supabase.from('diaries').insert({
             user_id: userId,
             date: new Date().toISOString().split('T')[0],
@@ -314,7 +314,7 @@ async function handleEndSession(
   } catch { /* ignore AI errors */ }
 
   // Update character states
-  const supabase = getSupabase()
+  const supabase = getSupabaseAdmin()
   const timestamp = new Date().toISOString()
 
   if (muUpdate) {

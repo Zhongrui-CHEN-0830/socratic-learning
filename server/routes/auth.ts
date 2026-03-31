@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { getSupabaseAdmin, getSupabase } from '../lib/supabase.js'
+﻿import { Router } from 'express'
+import { getSupabaseAdmin } from '../lib/supabase.js'
 import { generateToken, authMiddleware } from '../middleware/auth.js'
 
 const router = Router()
@@ -58,7 +58,7 @@ router.post('/login', async (req: any, res: any) => {
       return
     }
 
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,

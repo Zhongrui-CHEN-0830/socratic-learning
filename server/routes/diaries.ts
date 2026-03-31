@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { getSupabase } from '../lib/supabase.js'
+﻿import { Router } from 'express'
+import { getSupabaseAdmin } from '../lib/supabase.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
@@ -7,7 +7,7 @@ router.use(authMiddleware)
 
 router.get('/', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('diaries')
       .select('*')

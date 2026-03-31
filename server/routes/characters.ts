@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { getSupabase } from '../lib/supabase.js'
+﻿import { Router } from 'express'
+import { getSupabaseAdmin } from '../lib/supabase.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
@@ -8,7 +8,7 @@ router.use(authMiddleware)
 // Get character states for current user
 router.get('/state', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('character_states')
       .select('*')
@@ -24,7 +24,7 @@ router.get('/state', async (req: AuthRequest, res) => {
 // Get character log history
 router.get('/logs', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('character_states')
       .select('character_id, log, updated_at')

@@ -1,7 +1,7 @@
-import { Router } from 'express'
+﻿import { Router } from 'express'
 import multer from 'multer'
 import path from 'path'
-import { getSupabase } from '../lib/supabase.js'
+import { getSupabaseAdmin } from '../lib/supabase.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
@@ -23,7 +23,7 @@ const upload = multer({
 // List textbooks
 router.get('/', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('textbooks')
       .select('*')
@@ -46,7 +46,7 @@ router.post('/upload', upload.single('textbook'), async (req: AuthRequest, res) 
       return
     }
 
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const filename = req.file.originalname
     const storagePath = `${req.userId}/${Date.now()}-${filename}`
 
@@ -83,7 +83,7 @@ router.post('/upload', upload.single('textbook'), async (req: AuthRequest, res) 
 // Download / read textbook content
 router.get('/:id/content', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('textbooks')
       .select('storage_path')
@@ -116,7 +116,7 @@ router.get('/:id/content', async (req: AuthRequest, res) => {
 // Delete textbook
 router.delete('/:id', async (req: AuthRequest, res) => {
   try {
-    const supabase = getSupabase()
+    const supabase = getSupabaseAdmin()
 
     // Get storage path first
     const { data } = await supabase
