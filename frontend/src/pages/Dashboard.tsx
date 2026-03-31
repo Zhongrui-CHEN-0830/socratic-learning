@@ -55,7 +55,8 @@ export default function Dashboard() {
     if (activeConversationId) {
       loadMessages(activeConversationId)
     } else {
-      setMessages([])
+      // Only clear messages if there's no active conversation
+      // Don't clear when just switching between conversations
     }
   }, [activeConversationId])
 
@@ -167,7 +168,7 @@ export default function Dashboard() {
     setConversations(prev => [newConv, ...prev])
     setActiveConversationId(newConv.id)
     setCurrentTextbook(newConv.current_textbook_id || null)
-    setMessages([])
+    // Don't clear messages here - loadMessages will be triggered by the useEffect when activeConversationId changes
   }
 
   async function handleSelectConversation(convId: string) {
