@@ -29,11 +29,8 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })
 })
 
-// Auth routes (login/register/me — no JSON body needed for login via query, me needs nothing)
-// Note: express.json() is NOT applied globally — only to routes that need it below
-
 // Auth: POST /login and /register use URL-encoded form data
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', express.json({ limit: '2mb' }), authRoutes)
 
 // User: needs JSON body
 app.use('/api/user', express.json({ limit: '2mb' }), userRoutes)

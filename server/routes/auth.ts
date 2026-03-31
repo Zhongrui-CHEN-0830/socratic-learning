@@ -1,12 +1,12 @@
 import { Router } from 'express'
 import { getSupabaseAdmin, getSupabase } from '../lib/supabase.js'
-import { generateToken } from '../middleware/auth.js'
+import { generateToken, authMiddleware } from '../middleware/auth.js'
 
 const router = Router()
 
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { email, password } = req.body as { email?: string; password?: string }
     if (!email || !password) {
       res.status(400).json({ error: 'Email and password are required' })
       return
@@ -18,7 +18,6 @@ router.post('/register', async (req, res) => {
 
     const supabase = getSupabaseAdmin()
 
-    // Create auth user
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -32,14 +31,12 @@ router.post('/register', async (req, res) => {
 
     const userId = authData.user.id
 
-    // Create profile
     await supabase.from('profiles').insert({
       id: userId,
       email,
       nickname: email.split('@')[0],
     })
 
-    // Initialize character states
     await supabase.from('character_states').insert([
       { user_id: userId, character_id: 'mu', affection: 50, strictness: 50, mood: {}, log: [] },
       { user_id: userId, character_id: 'sang', affection: 50, strictness: 50, mood: {}, log: [] },
@@ -47,7 +44,7 @@ router.post('/register', async (req, res) => {
 
     const token = generateToken(userId, email)
     res.json({ token, user: { id: userId, email } })
-  } catch (err: unknown) {
+  } catch (err) {
     console.error('Register error:', err)
     res.status(500).json({ error: '服务器错误' })
   }
@@ -55,13 +52,12 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { email, password } = req.body as { email?: string; password?: string }
     if (!email || !password) {
       res.status(400).json({ error: 'Email and password are required' })
       return
     }
 
-    // Use public Supabase client for auth
     const supabase = getSupabase()
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
@@ -75,15 +71,15 @@ router.post('/login', async (req, res) => {
 
     const token = generateToken(signInData.user.id, signInData.user.email!)
     res.json({ token, user: { id: signInData.user.id, email: signInData.user.email } })
-  } catch (err: unknown) {
+  } catch (err) {
     console.error('Login error:', err)
     res.status(500).json({ error: '服务器错误' })
   }
 })
 
-router.get('/me', async (req, res) => {
-  const authReq = req as unknown as AuthRequest
-  if (!authReq.userId) {
+router.get('/me', authMiddleware, async (req: any, res) => {
+  const userId = req.userId
+  if (!userId) {
     res.status(401).json({ error: 'Unauthorized' })
     return
   }
@@ -92,7 +88,7 @@ router.get('/me', async (req, res) => {
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', authReq.userId)
+    .eq('id', userId)
     .maybeSingle()
 
   res.json({
